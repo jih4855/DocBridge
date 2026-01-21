@@ -17,6 +17,7 @@ from app.services.folder_service import (
     PathNotDirectoryError,
     PathNotExistsError,
 )
+from app.repositories.folder_repository import FolderRepository
 from app.services.file_watcher import file_watcher
 
 router = APIRouter()
@@ -38,7 +39,8 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
 
     # DB 세션 및 서비스 호출
     try:
-        service = FolderService(db)
+        repository = FolderRepository(db)
+        service = FolderService(repository)
         result = service.register_folder(folder_data)
         
         # watcher 추가
@@ -71,7 +73,8 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
 )
 async def list_folders(db: Session = Depends(get_db)):
     """폴더 목록 조회 API"""
-    service = FolderService(db)
+    repository = FolderRepository(db)
+    service = FolderService(repository)
     folders = service.list_folders()
     return FolderListResponse(
         folders=[
@@ -94,7 +97,7 @@ async def list_folders(db: Session = Depends(get_db)):
         404: {"description": "폴더 없음"},
     },
 )
-async def get_folder_tree(folder_id: int, md_only: bool = False, db: Session = Depends(get_db)):
+async def get_folder_tree(folder_id: int, md_only: bool = True, db: Session = Depends(get_db)):
     """
     폴더 트리 조회 API
 
@@ -104,7 +107,8 @@ async def get_folder_tree(folder_id: int, md_only: bool = False, db: Session = D
     from app.utils.tree_builder import build_tree
     from app.schemas.folder import FolderTreeResponse
 
-    service = FolderService(db)
+    repository = FolderRepository(db)
+    service = FolderService(repository)
 
     # 폴더 조회
     folder = service.get_folder_by_id(folder_id)
@@ -152,7 +156,8 @@ async def delete_folder(folder_id: int, db: Session = Depends(get_db)):
             detail="invalid folder id"
         )
 
-    service = FolderService(db)
+    repository = FolderRepository(db)
+    service = FolderService(repository)
     
     # 존재 확인
     folder = service.get_folder_by_id(folder_id)
