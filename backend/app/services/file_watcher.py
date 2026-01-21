@@ -13,6 +13,8 @@ import asyncio
 import os
 import threading
 import time
+from app.core.config import settings
+from app.utils.tree_builder import build_tree
 from pathlib import Path
 from typing import Any, Callable
 
@@ -330,6 +332,5 @@ class FileWatcherService:
 
 # 전역 FileWatcherService 인스턴스
 # 로컬 실행(Native) vs Docker(Polling) 자동 전환
-# 기본값 False (Native) -> 로컬 실행 시 성능 최적화
-use_polling = os.getenv("WATCHDOG_USE_POLLING", "false").lower() == "true"
-file_watcher = FileWatcherService(use_polling=use_polling)
+# settings.WATCHDOG_USE_POLLING 값 사용 (기본값 False)
+file_watcher = FileWatcherService(use_polling=settings.WATCHDOG_USE_POLLING)

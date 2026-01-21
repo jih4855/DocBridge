@@ -17,6 +17,7 @@ interface ProjectListProps {
     onSelectFile: (path: string) => void;
     onDeleteFolder: (id: number) => void;
     onRetry: () => void;
+    refreshTriggers: Record<number, number>;
 }
 
 // 로딩 스켈레톤

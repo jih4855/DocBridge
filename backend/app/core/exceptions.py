@@ -37,6 +37,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
         },
     )
 
+from fastapi.encoders import jsonable_encoder
+
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """
     유효성 검사 실패 (422) 처리
@@ -46,6 +48,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "code": "VALIDATION_ERROR",
             "message": "입력값이 유효하지 않습니다.",
-            "details": exc.errors()
+            "details": jsonable_encoder(exc.errors())
         },
     )

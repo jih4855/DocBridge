@@ -5,6 +5,7 @@ DocBridge Backend - FastAPI Application
 """
 
 import asyncio
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -67,7 +68,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -98,7 +99,13 @@ app.include_router(websocket_router, tags=["websocket"])
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    """헬스체크 엔드포인트"""
+    """루트 엔드포인트"""
     return {"status": "ok", "service": "DocBridge API"}
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    """헬스체크 엔드포인트 (Docker/K8s용)"""
+    return {"status": "healthy"}
 
 

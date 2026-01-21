@@ -1,8 +1,7 @@
 'use client';
 
 import { Copy, FileText, Loader2, AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { fetchClient, ApiError } from '@/lib/api';
+import { useFileContent } from '@/hooks/useFileContent';
 import MarkdownViewer from './MarkdownViewer';
 
 interface MainViewerProps {
@@ -10,38 +9,7 @@ interface MainViewerProps {
 }
 
 export default function MainViewer({ filePath }: MainViewerProps) {
-    const [content, setContent] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!filePath) {
-            setContent('');
-            setError(null);
-            return;
-        }
-
-        const fetchContent = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const data = await fetchClient<{ content: string }>(`/api/files?path=${encodeURIComponent(filePath)}`);
-                setContent(data.content);
-            } catch (err) {
-                console.error('API Error:', err);
-                if (err instanceof ApiError) {
-                    setError(err.message);
-                } else {
-                    setError('알 수 없는 오류가 발생했습니다.');
-                }
-                setContent('');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchContent();
-    }, [filePath]);
+    const { content, loading, error } = useFileContent(filePath);
 
     const handleCopy = async () => {
         if (!content) return;

@@ -22,3 +22,9 @@ data/
 *.json
 !package.json
 !tsconfig.json
+
+# Documentation and Specific Folders
+*.md
+!README.md
+spec/
+landing/

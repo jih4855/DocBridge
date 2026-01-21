@@ -17,9 +17,8 @@ from app.schemas.folder import FolderCreate, FolderResponse
 class FolderService:
     """폴더 비즈니스 로직"""
 
-    def __init__(self, db: Session) -> None:
-        self._db = db
-        self._repository = FolderRepository(db)
+    def __init__(self, repository: FolderRepository) -> None:
+        self._repository = repository
 
     def register_folder(self, data: FolderCreate) -> FolderResponse:
         """

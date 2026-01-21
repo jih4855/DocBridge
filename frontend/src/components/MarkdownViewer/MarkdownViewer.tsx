@@ -34,7 +34,7 @@ export default function MarkdownViewer({ content, className }: MarkdownViewerPro
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                    code({ node, inline, className, children, ...props }: any) {
+                    code({ inline, className, children, ...props }: React.ComponentProps<'code'> & { inline?: boolean }) {
                         const match = /language-(\w+)/.exec(className || '');
                         const language = match ? match[1] : '';
                         const codeString = String(children).replace(/\n$/, '');

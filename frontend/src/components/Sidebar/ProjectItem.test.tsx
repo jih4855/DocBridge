@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ProjectItem from './ProjectItem';
-import { fetchClient, ApiError } from '@/lib/api';
+import { fetchClient } from '@/lib/api';
 
 // fetchClient Mock
 jest.mock('@/lib/api', () => ({
@@ -35,6 +35,7 @@ describe('ProjectItem', () => {
                 selectedFile={null}
                 onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
+                refreshTrigger={0}
             />
         );
         expect(screen.getByText('Project A')).toBeInTheDocument();
@@ -50,6 +51,7 @@ describe('ProjectItem', () => {
                 selectedFile={null}
                 onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
+                refreshTrigger={0}
             />
         );
 
@@ -69,6 +71,7 @@ describe('ProjectItem', () => {
                 selectedFile={null}
                 onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
+                refreshTrigger={0}
             />
         );
 

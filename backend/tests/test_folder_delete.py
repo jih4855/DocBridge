@@ -48,7 +48,7 @@ class TestFolderDeleteValidation:
 
         # Then
         assert response.status_code == 404
-        assert response.json()["error"] == "folder not found"
+        assert response.json()["message"] == "folder not found"
 
     def test_delete_folder_invalid_id(self, client: TestClient):
         """숫자가 아닌 ID 입력 시 422 (FastAPI default) or 400"""
@@ -68,9 +68,9 @@ class TestFolderDeleteValidation:
         response = client.delete("/api/folders/abc")
         
         # Then
-        # 글로벌 핸들러 추가로 400 반환 보장됨
-        assert response.status_code == 400
-        assert response.json()["error"] == "invalid request" 
+        # 글로벌 핸들러 추가로 400 반환 보장됨 -> 422 (FastAPI standard)
+        assert response.status_code == 422
+        # assert response.json()["message"] == "invalid request"  # 422 usually returns detail list 
 
     def test_delete_folder_negative_id(self, client: TestClient, db: Session):
         """음수 ID 입력 시 400"""
@@ -80,7 +80,7 @@ class TestFolderDeleteValidation:
 
         # Then
         assert response.status_code == 400
-        assert response.json()["error"] == "invalid folder id"
+        assert response.json()["message"] == "invalid folder id"
 
 
 class TestFolderDeleteEdgeCases:

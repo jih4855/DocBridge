@@ -8,9 +8,10 @@ import os
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-
 from app.db.database import get_db
+
 from app.services.folder_service import FolderService
+from app.repositories.folder_repository import FolderRepository
 
 router = APIRouter()
 
@@ -65,8 +66,9 @@ async def get_file_content(path: str = None, db: Session = Depends(get_db)):
             content={"error": "only markdown files allowed"}
         )
 
-    # 5. 등록된 폴더 하위 경로인지 확인 (보안)
-    service = FolderService(db)
+    # 허용된 폴더 경로인지 확인 (보안)
+    repository = FolderRepository(db)
+    service = FolderService(repository)
     registered_folders = service.list_folders()
     
     # 실제 경로로 정규화

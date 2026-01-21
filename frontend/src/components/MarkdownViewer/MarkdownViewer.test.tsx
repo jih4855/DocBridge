@@ -8,38 +8,40 @@ jest.mock('mermaid', () => ({
     run: jest.fn(),
 }));
 
-jest.mock('react-markdown', () => (props: any) => {
-    return (
-        <div data-testid="react-markdown">
-            {props.children}
-            {/* Manually invoke custom code renderer for testing logic */}
-            {props.components?.code && (
-                <div data-testid="custom-code-renderer" style={{ display: 'none' }}>
-                    {/* Scenario 1: Mermaid */}
-                    {props.components.code({
-                        className: 'language-mermaid',
-                        children: 'graph TD;A-->B;',
-                        inline: false,
-                        node: {}
-                    })}
-                    {/* Scenario 2: Python Code */}
-                    {props.components.code({
-                        className: 'language-python',
-                        children: 'print("hello")',
-                        inline: false,
-                        node: {}
-                    })}
-                </div>
-            )}
-        </div>
-    );
+jest.mock('react-markdown', () => {
+    const MockReactMarkdown = (props: React.PropsWithChildren<{ components?: { code?: (p: { className?: string; children?: React.ReactNode; inline?: boolean; node?: unknown }) => React.ReactNode } }>) => {
+        return (
+            <div data-testid="react-markdown">
+                {props.children}
+                {/* Manually invoke custom code renderer for testing logic */}
+                {props.components?.code && (
+                    <div data-testid="custom-code-renderer" style={{ display: 'none' }}>
+                        {/* Scenario 1: Mermaid */}
+                        {props.components.code({
+                            className: 'language-mermaid',
+                            children: 'graph TD;A-->B;',
+                            inline: false
+                        })}
+                        {/* Scenario 2: Python Code */}
+                        {props.components.code({
+                            className: 'language-python',
+                            children: 'print("hello")',
+                            inline: false
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
+    MockReactMarkdown.displayName = 'MockReactMarkdown';
+    return MockReactMarkdown;
 });
 
 jest.mock('remark-gfm', () => () => { });
 
 // Mock SyntaxHighlighter
 jest.mock('react-syntax-highlighter', () => ({
-    Prism: ({ children, language }: any) => <pre data-testid="syntax-highlighter" data-language={language}>{children}</pre>
+    Prism: ({ children, language }: { children: React.ReactNode; language: string }) => <pre data-testid="syntax-highlighter" data-language={language}>{children}</pre>
 }));
 
 jest.mock('react-syntax-highlighter/dist/esm/styles/prism', () => ({

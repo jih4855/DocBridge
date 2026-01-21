@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     ChevronRight,
     ChevronDown,
@@ -46,7 +46,8 @@ export default function ProjectItem({
     const [isLoading, setIsLoading] = useState(false);
 
     // 트리 데이터 로드 함수 분리
-    const loadTree = async () => {
+    // 트리 데이터 로드 함수 분리
+    const loadTree = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await fetchClient<{ tree: { children: TreeNode[] } }>(`/api/folders/${folder.id}/tree`);
@@ -56,7 +57,7 @@ export default function ProjectItem({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [folder.id]);
 
     // 토글 핸들러
     const handleToggle = async () => {
@@ -71,7 +72,7 @@ export default function ProjectItem({
         if (isExpanded && refreshTrigger > 0) {
             loadTree();
         }
-    }, [refreshTrigger]);
+    }, [refreshTrigger, isExpanded, loadTree]);
 
     return (
         <div className="mb-0.5">

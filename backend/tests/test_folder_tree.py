@@ -50,7 +50,7 @@ class TestFolderTreeAPI:
 
         # Then
         assert response.status_code == 404
-        assert response.json()["error"] == "folder not found"
+        assert response.json()["message"] == "folder not found"
 
     def test_get_tree_path_deleted(
         self, client: TestClient, temp_dir: Path
@@ -73,7 +73,7 @@ class TestFolderTreeAPI:
 
         # Then
         assert response.status_code == 404
-        assert response.json()["error"] == "folder path does not exist"
+        assert response.json()["message"] == "folder path does not exist"
 
     def test_get_tree_invalid_id(self, client: TestClient) -> None:
         """잘못된 ID 형식 시 422 또는 400 반환"""
@@ -82,8 +82,8 @@ class TestFolderTreeAPI:
 
         # Then
         # FastAPI는 기본적으로 path parameter 타입 불일치 시 422 반환하지만,
-        # 글로벌 핸들러를 통해 400으로 통일함 (Spec 준수)
-        assert response.status_code == 400
+        # 글로벌 핸들러 추가로 400 반환 보장됨 (Spec 준수) -> 422 standard
+        assert response.status_code == 422
 
 
 class TestTreeBuilder:

@@ -4,19 +4,22 @@
 환경 변수를 통한 설정 관리
 """
 
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings:
+class Settings(BaseSettings):
     """애플리케이션 설정"""
+    
+    # 기본값은 로컬 개발 환경에 맞춤
+    DATA_DIR: str = "./data"
+    PROJECT_ROOT: str = "./docbridge"
+    WATCHDOG_USE_POLLING: bool = False
 
-    @property
-    def DATA_DIR(self) -> str:
-        return os.environ.get("DATA_DIR", "/app/data")
-
-    @property
-    def PROJECT_ROOT(self) -> str:
-        return os.environ.get("PROJECT_ROOT", "/data")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 
 settings = Settings()

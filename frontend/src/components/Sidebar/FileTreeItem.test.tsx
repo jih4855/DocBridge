@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 // Mock Recursive Component to avoid infinite loops in tests or complex rendering
 jest.mock('./FileTree', () => ({
     __esModule: true,
-    default: ({ nodes }: any) => <div data-testid="recursive-child">Child Count: {nodes.length}</div>
+    default: ({ nodes }: { nodes: unknown[] }) => <div data-testid="recursive-child">Child Count: {nodes.length}</div>
 }));
 
 const mockNodeFile = {
