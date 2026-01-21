@@ -28,3 +28,4 @@ data/
 !README.md
 spec/
 landing/
+publish_docker.sh
