@@ -10,5 +10,5 @@ echo "Pushing images to GHCR..."
 docker-compose push
 
 echo "Successfully pushed images:"
-echo " - ghcr.io/jeong-inhyo/docbridge-backend:latest"
-echo " - ghcr.io/jeong-inhyo/docbridge-frontend:latest"
+echo " - ghcr.io/jih4855/docbridge-backend:latest"
+echo " - ghcr.io/jih4855/docbridge-frontend:latest"

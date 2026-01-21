@@ -1,7 +1,7 @@
 services:
   backend:
     build: ./backend
-    image: ghcr.io/jeong-inhyo/docbridge-backend:latest
+    image: ghcr.io/jih4855/docbridge-backend:latest
     container_name: docbridge-backend
     env_file:
       - .env
@@ -29,7 +29,7 @@ services:
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:8000
         - NEXT_PUBLIC_WS_URL=ws://localhost:8000
-    image: ghcr.io/jeong-inhyo/docbridge-frontend:latest
+    image: ghcr.io/jih4855/docbridge-frontend:latest
     container_name: docbridge-frontend
     env_file:
       - .env
