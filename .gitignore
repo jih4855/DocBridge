@@ -29,3 +29,6 @@ data/
 spec/
 landing/
 publish_docker.sh
+*.db
+*.sqlite
+*.sqlite3
