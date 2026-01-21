@@ -35,15 +35,33 @@ def temp_file(temp_dir: Path) -> Path:
 def client() -> Generator[TestClient, None, None]:
     """테스트용 FastAPI TestClient (독립 데이터 디렉토리)"""
     with tempfile.TemporaryDirectory() as tmpdir:
-        # 테스트용 데이터 디렉토리 설정 (별도 임시 폴더)
-        os.environ["DATA_DIR"] = str(Path(tmpdir) / "data")
+        # 1. 환경변수 설정 (새로운 임시 경로)
+        new_data_dir = str(Path(tmpdir) / "data")
+        os.environ["DATA_DIR"] = new_data_dir
         os.environ["PROJECT_ROOT"] = tmpdir
 
-        # 앱 임포트 (환경변수 설정 후)
+        # 2. Settings 객체 강제 업데이트 (이미 로드된 경우 대비)
+        from app.core.config import settings
+        settings.DATA_DIR = new_data_dir
+
+        # 3. DB 엔진/세션 초기화 (중요: 이전 테스트의 연결 끊기)
+        from app.db import database
+        if database.engine:
+            database.engine.dispose()
+        database.engine = None
+        database.SessionLocal = None
+
+        # 4. 앱 임포트
         from main import app
 
         with TestClient(app) as test_client:
             yield test_client
+        
+        # 5. 정리: 다음 테스트를 위해 DB 연결 해제 및 초기화
+        if database.engine:
+            database.engine.dispose()
+        database.engine = None
+        database.SessionLocal = None
 
 
 @pytest.fixture
