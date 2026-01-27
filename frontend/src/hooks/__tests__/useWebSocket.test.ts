@@ -2,14 +2,25 @@ import { renderHook, act } from '@testing-library/react';
 import { useWebSocket } from '../useWebSocket';
 
 describe('useWebSocket', () => {
-    let mockWebSocket: any;
+    // Mock WebSocket type
+    type MockWebSocket = {
+        close: jest.Mock;
+        send: jest.Mock;
+        onopen: () => void;
+        onclose: () => void;
+    };
+
+    let mockWebSocket: MockWebSocket;
 
     beforeEach(() => {
         jest.useFakeTimers();
         mockWebSocket = {
             close: jest.fn(),
             send: jest.fn(),
+            onopen: jest.fn(),
+            onclose: jest.fn(),
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (global as any).WebSocket = jest.fn(() => mockWebSocket);
     });
 
@@ -21,6 +32,7 @@ describe('useWebSocket', () => {
     it('should connect on mount', () => {
         const { result } = renderHook(() => useWebSocket({ url: 'ws://test.com' }));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledWith('ws://test.com');
         expect(result.current.isConnected).toBe(false);
 
@@ -37,6 +49,7 @@ describe('useWebSocket', () => {
         act(() => {
             mockWebSocket.onopen();
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(1);
 
         // Simulate close
@@ -45,6 +58,7 @@ describe('useWebSocket', () => {
         });
 
         // Should not have reconnected immediately
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(1);
 
         // Advance timers by retry interval (1000ms)
@@ -53,6 +67,7 @@ describe('useWebSocket', () => {
         });
 
         // Should have reconnected
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(2);
     });
 
@@ -66,18 +81,21 @@ describe('useWebSocket', () => {
         act(() => { mockWebSocket.onclose(); });
         // Retry 1: 1000 * 2^0 = 1000ms
         act(() => { jest.advanceTimersByTime(1000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(2);
 
         // 2nd disconnect (fail immediately)
         act(() => { mockWebSocket.onclose(); });
         // Retry 2: 1000 * 2^1 = 2000ms
         act(() => { jest.advanceTimersByTime(2000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(3);
 
         // 3rd disconnect
         act(() => { mockWebSocket.onclose(); });
         // Retry 3: 1000 * 2^2 = 4000ms
         act(() => { jest.advanceTimersByTime(4000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(4);
     });
 });

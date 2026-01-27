@@ -39,15 +39,24 @@ export function useFolderTree(refreshTrigger: number) {
     }, [loadFolders, refreshTrigger]);
 
     // WebSocket 연결 - 파일 변경 시 부분 업데이트
-    const handleFileChange = useCallback((data: any) => {
-        if (data.type === 'file_change') {
+    type FileChangeEvent = {
+        type: 'file_change';
+        event: string;
+        path: string;
+        folder_id?: number;
+    };
+
+    const handleFileChange = useCallback((data: unknown) => {
+        const message = data as FileChangeEvent;
+        if (message.type === 'file_change') {
             // console.log(`[useFolderTree] 파일 변경 감지: ${data.event} - ${data.path}`);
 
             // 폴더 ID가 있으면 해당 프로젝트만 트리 갱신 트리거
-            if (data.folder_id) {
+            if (message.folder_id) {
                 setRefreshTriggers(prev => ({
                     ...prev,
-                    [data.folder_id]: (prev[data.folder_id] || 0) + 1
+                    // key is number, but object keys are coerced to strings in JS, but TS is happy with number index here
+                    [message.folder_id as number]: (prev[message.folder_id!] || 0) + 1
                 }));
             } else {
                 // folder_id가 없거나 기타 상황이면 전체 로드 (fallback)
@@ -56,7 +65,7 @@ export function useFolderTree(refreshTrigger: number) {
         }
     }, [loadFolders]);
 
-    const { isConnected } = useWebSocket({
+    useWebSocket({
         url: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}/ws/watch`,
         onMessage: handleFileChange,
         onOpen: () => {

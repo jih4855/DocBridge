@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface WebSocketOptions {
     url: string;
-    onMessage?: (data: any) => void;
+    onMessage?: (data: unknown) => void;
     onOpen?: () => void;
     onClose?: () => void;
     retryInterval?: number;
@@ -72,7 +72,7 @@ export function useWebSocket({
             }, nextRetryDelay);
         };
 
-        ws.onerror = (error) => {
+        ws.onerror = () => {
             // console.warn('[useWebSocket] Error:', error);
             // onclose will be called automatically after onerror
             ws.close();
