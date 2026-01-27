@@ -66,7 +66,7 @@ export function useFolderTree(refreshTrigger: number) {
     }, [loadFolders]);
 
     useWebSocket({
-        url: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}/ws/watch`,
+        url: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000'}/ws/watch`,
         onMessage: handleFileChange,
         onOpen: () => {
             // 연결 시 최신 상태 동기화를 위해 한 번 로드

@@ -22,6 +22,18 @@ export function useWebSocket({
     const retryCountRef = useRef(0);
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Event handlers refs to prevent reconnection on handler change
+    const onMessageRef = useRef(onMessage);
+    const onOpenRef = useRef(onOpen);
+    const onCloseRef = useRef(onClose);
+
+    // Update refs on render
+    useEffect(() => {
+        onMessageRef.current = onMessage;
+        onOpenRef.current = onOpen;
+        onCloseRef.current = onClose;
+    }, [onMessage, onOpen, onClose]);
+
     const connect = useCallback(() => {
         if (!url) return;
 
@@ -41,13 +53,13 @@ export function useWebSocket({
                 clearTimeout(reconnectTimeoutRef.current);
                 reconnectTimeoutRef.current = null;
             }
-            onOpen?.();
+            onOpenRef.current?.();
         };
 
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                onMessage?.(data);
+                onMessageRef.current?.(data);
             } catch (error) {
                 console.error('[useWebSocket] Message parse error:', error);
             }
@@ -56,7 +68,7 @@ export function useWebSocket({
         ws.onclose = () => {
             // console.log('[useWebSocket] Disconnected');
             setIsConnected(false);
-            onClose?.();
+            onCloseRef.current?.();
 
             // Exponential Backoff Logic
             const nextRetryDelay = Math.min(
@@ -78,7 +90,7 @@ export function useWebSocket({
             ws.close();
         };
 
-    }, [url, retryInterval, maxRetryInterval, onMessage, onOpen, onClose]);
+    }, [url, retryInterval, maxRetryInterval]);
 
     useEffect(() => {
         connect();
