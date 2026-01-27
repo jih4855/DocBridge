@@ -12,7 +12,8 @@ services:
       - "127.0.0.1:8001:8000"
     environment:
       - PROJECT_ROOT=/data
-      - WATCHDOG_USE_POLLING=true # Docker 환경에서는 Polling 필수
+      - WATCHDOG_USE_POLLING=true
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
       interval: 30s
