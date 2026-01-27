@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchClient, ApiError } from '@/lib/api';
+import { useWebSocket } from './useWebSocket';
 
 export interface Folder {
     id: number;
@@ -38,48 +39,31 @@ export function useFolderTree(refreshTrigger: number) {
     }, [loadFolders, refreshTrigger]);
 
     // WebSocket 연결 - 파일 변경 시 부분 업데이트
-    useEffect(() => {
-        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
-        const ws = new WebSocket(`${wsUrl}/ws/watch`);
+    const handleFileChange = useCallback((data: any) => {
+        if (data.type === 'file_change') {
+            // console.log(`[useFolderTree] 파일 변경 감지: ${data.event} - ${data.path}`);
 
-        ws.onopen = () => {
-            // console.log('[useFolderTree] WebSocket 연결됨');
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === 'file_change') {
-                    // console.log(`[useFolderTree] 파일 변경 감지: ${data.event} - ${data.path}`);
-
-                    // 폴더 ID가 있으면 해당 프로젝트만 트리 갱신 트리거
-                    if (data.folder_id) {
-                        setRefreshTriggers(prev => ({
-                            ...prev,
-                            [data.folder_id]: (prev[data.folder_id] || 0) + 1
-                        }));
-                    } else {
-                        // folder_id가 없거나 기타 상황이면 전체 로드 (fallback)
-                        loadFolders();
-                    }
-                }
-            } catch (e) {
-                console.error('[useFolderTree] WebSocket 메시지 파싱 오류:', e);
+            // 폴더 ID가 있으면 해당 프로젝트만 트리 갱신 트리거
+            if (data.folder_id) {
+                setRefreshTriggers(prev => ({
+                    ...prev,
+                    [data.folder_id]: (prev[data.folder_id] || 0) + 1
+                }));
+            } else {
+                // folder_id가 없거나 기타 상황이면 전체 로드 (fallback)
+                loadFolders();
             }
-        };
-
-        ws.onerror = (error) => {
-            console.warn('[useFolderTree] WebSocket 연결 오류:', error);
-        };
-
-        ws.onclose = () => {
-            // console.log('[useFolderTree] WebSocket 연결 종료');
-        };
-
-        return () => {
-            ws.close();
-        };
+        }
     }, [loadFolders]);
+
+    const { isConnected } = useWebSocket({
+        url: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8001'}/ws/watch`,
+        onMessage: handleFileChange,
+        onOpen: () => {
+            // 연결 시 최신 상태 동기화를 위해 한 번 로드
+            loadFolders();
+        }
+    });
 
     // 폴더 삭제 핸들러
     const deleteFolder = async (folderId: number): Promise<boolean> => {

@@ -55,11 +55,6 @@ def is_hidden_file(path: str) -> bool:
     return filename.startswith('.')
 
 
-COMMON_IGNORED_DIRS = {
-    'node_modules', '__pycache__', 'venv', '.venv', 'env', '.env', 
-    'dist', 'build', 'coverage', '.git', '.vscode', '.idea', '.next'
-}
-
 def is_ignored_path(path: str) -> bool:
     """
     무시할 경로인지 확인 (숨김 폴더 및 node_modules 등)
@@ -75,7 +70,7 @@ def is_ignored_path(path: str) -> bool:
         # 숨김 폴더 (.으로 시작) 또는 일반적인 제외 폴더
         if part.startswith('.') and part not in ('.', '..'):
             return True
-        if part in COMMON_IGNORED_DIRS:
+        if part in settings.IGNORED_DIRS:
             return True
     return False
 

@@ -15,6 +15,15 @@ class Settings(BaseSettings):
     PROJECT_ROOT: str = "./docbridge"
     WATCHDOG_USE_POLLING: bool = False
 
+    IGNORED_DIRS: frozenset[str] = frozenset({
+        'node_modules', '__pycache__', 'venv', '.venv', 'env', '.env', 
+        'dist', 'build', 'coverage', '.git', '.vscode', '.idea', '.next'
+    })
+    
+    DENY_LIST: frozenset[str] = frozenset({
+        '/', '/etc', '/root', '/bin', '/sbin', '/usr', '/proc', '/sys', '/dev'
+    })
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

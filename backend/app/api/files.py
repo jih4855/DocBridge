@@ -68,7 +68,9 @@ async def get_file_content(path: str = None, db: Session = Depends(get_db)):
 
     # 허용된 폴더 경로인지 확인 (보안)
     repository = FolderRepository(db)
-    service = FolderService(repository)
+    from app.services.file_watcher import file_watcher
+    from app.core.config import settings
+    service = FolderService(repository, file_watcher, settings)
     registered_folders = service.list_folders()
     
     # 실제 경로로 정규화

@@ -24,3 +24,13 @@
   background: #52525b;
   /* zinc-600 */
 }
+
+@layer base {
+  ::selection {
+    @apply bg-brand/30 text-white;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-main;
+  }
+}

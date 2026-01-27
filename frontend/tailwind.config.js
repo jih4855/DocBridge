@@ -23,15 +23,19 @@ module.exports = {
                 'file-item': '#38bdf8', // sky-400
 
                 // Borders
-                'border-main': '#27272a', // zinc-800
+                'border-main': 'rgba(255, 255, 255, 0.1)', // white/10
 
                 // Brand
                 brand: '#2563eb',     // blue-600
                 'brand-hover': '#1d4ed8', // blue-700
             },
+            fontFamily: {
+                sans: ['var(--font-inter)', 'sans-serif'],
+                mono: ['var(--font-jetbrains-mono)', 'monospace'],
+            },
         },
     },
     plugins: [
         require('@tailwindcss/typography'),
-    ], // typography 플러그인 제거 (심플하게)
+    ],
 };

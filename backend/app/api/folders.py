@@ -19,6 +19,7 @@ from app.services.folder_service import (
 )
 from app.repositories.folder_repository import FolderRepository
 from app.services.file_watcher import file_watcher
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
     # DB 세션 및 서비스 호출
     try:
         repository = FolderRepository(db)
-        service = FolderService(repository)
+        service = FolderService(repository, file_watcher, settings)
         result = service.register_folder(folder_data)
         
         # watcher 추가
@@ -74,7 +75,7 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
 async def list_folders(db: Session = Depends(get_db)):
     """폴더 목록 조회 API"""
     repository = FolderRepository(db)
-    service = FolderService(repository)
+    service = FolderService(repository, file_watcher, settings)
     folders = service.list_folders()
     return FolderListResponse(
         folders=[
@@ -108,7 +109,7 @@ async def get_folder_tree(folder_id: int, md_only: bool = True, db: Session = De
     from app.schemas.folder import FolderTreeResponse
 
     repository = FolderRepository(db)
-    service = FolderService(repository)
+    service = FolderService(repository, file_watcher, settings)
 
     # 폴더 조회
     folder = service.get_folder_by_id(folder_id)
@@ -157,7 +158,7 @@ async def delete_folder(folder_id: int, db: Session = Depends(get_db)):
         )
 
     repository = FolderRepository(db)
-    service = FolderService(repository)
+    service = FolderService(repository, file_watcher, settings)
     
     # 존재 확인
     folder = service.get_folder_by_id(folder_id)

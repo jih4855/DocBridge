@@ -11,6 +11,11 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from app.services.file_watcher import (
+    is_markdown_file, is_hidden_file, is_ignored_path,
+    MarkdownEventHandler, FileWatcherService
+)
+from app.services.connection_manager import ConnectionManager
 
 
 class TestIsMarkdownFile:
@@ -18,7 +23,6 @@ class TestIsMarkdownFile:
 
     def test_markdown_file_returns_true(self) -> None:
         """`.md` 확장자 파일 → True"""
-        from app.services.file_watcher import is_markdown_file
         
         assert is_markdown_file("test.md") is True
         assert is_markdown_file("/path/to/file.md") is True
@@ -26,7 +30,6 @@ class TestIsMarkdownFile:
 
     def test_non_markdown_file_returns_false(self) -> None:
         """`.md`가 아닌 파일 → False"""
-        from app.services.file_watcher import is_markdown_file
         
         assert is_markdown_file("test.txt") is False
         assert is_markdown_file("test.py") is False
@@ -39,7 +42,6 @@ class TestIsHiddenFile:
 
     def test_hidden_file_returns_true(self) -> None:
         """`.`으로 시작하는 파일 → True"""
-        from app.services.file_watcher import is_hidden_file
         
         assert is_hidden_file(".hidden.md") is True
         assert is_hidden_file(".gitignore") is True
@@ -47,7 +49,6 @@ class TestIsHiddenFile:
 
     def test_normal_file_returns_false(self) -> None:
         """일반 파일 → False"""
-        from app.services.file_watcher import is_hidden_file
         
         assert is_hidden_file("normal.md") is False
         assert is_hidden_file("/path/to/normal.md") is False
@@ -58,7 +59,6 @@ class TestIsIgnoredPath:
 
     def test_file_in_hidden_folder_returns_true(self) -> None:
         """숨김 폴더 내 파일 → True"""
-        from app.services.file_watcher import is_ignored_path
         
         assert is_ignored_path("/.git/config.md") is True
         assert is_ignored_path("/path/.hidden/file.md") is True
@@ -66,7 +66,6 @@ class TestIsIgnoredPath:
 
     def test_file_in_common_ignored_folder_returns_true(self) -> None:
         """일반적인 제외 폴더(node_modules 등) 내 파일 → True"""
-        from app.services.file_watcher import is_ignored_path
         
         assert is_ignored_path("/project/node_modules/pkg/README.md") is True
         assert is_ignored_path("/project/venv/lib/site-packages/README.md") is True
@@ -75,7 +74,6 @@ class TestIsIgnoredPath:
 
     def test_file_in_normal_folder_returns_false(self) -> None:
         """일반 폴더 내 파일 → False"""
-        from app.services.file_watcher import is_ignored_path
         
         assert is_ignored_path("/api/auth.md") is False
         assert is_ignored_path("/path/to/normal/file.md") is False
@@ -87,7 +85,6 @@ class TestDebounce:
     @pytest.mark.asyncio
     async def test_debounce_duplicate_events(self) -> None:
         """동일 파일 100ms 간격 이벤트 2회 → 1회만 발생"""
-        from app.services.file_watcher import MarkdownEventHandler
         
         callback = AsyncMock()
         handler = MarkdownEventHandler(folder_id=1, callback=callback)
@@ -118,7 +115,6 @@ class TestDebounce:
     @pytest.mark.asyncio
     async def test_debounce_different_files(self) -> None:
         """다른 파일 100ms 간격 이벤트 2회 → 2회 발생"""
-        from app.services.file_watcher import MarkdownEventHandler
         
         callback = AsyncMock()
         handler = MarkdownEventHandler(folder_id=1, callback=callback)
@@ -153,7 +149,6 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_connect_adds_to_active_connections(self) -> None:
         """연결 시 active_connections에 추가"""
-        from app.services.connection_manager import ConnectionManager
         
         manager = ConnectionManager()
         mock_websocket = AsyncMock()
@@ -166,7 +161,6 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_disconnect_removes_from_active_connections(self) -> None:
         """연결 해제 시 active_connections에서 제거 (async 버전)"""
-        from app.services.connection_manager import ConnectionManager
         
         manager = ConnectionManager()
         mock_websocket = AsyncMock()
@@ -179,7 +173,6 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_broadcast_sends_to_all_connections(self) -> None:
         """broadcast 시 모든 연결에 메시지 전송"""
-        from app.services.connection_manager import ConnectionManager
         
         manager = ConnectionManager()
         mock_ws1 = AsyncMock()
@@ -197,7 +190,6 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_broadcast_removes_failed_connections(self) -> None:
         """broadcast 시 실패한 연결 자동 제거"""
-        from app.services.connection_manager import ConnectionManager
         
         manager = ConnectionManager()
         mock_ws1 = AsyncMock()
@@ -225,7 +217,6 @@ class TestFileWatcherService:
 
     def test_add_folder_success(self, temp_dir: Path) -> None:
         """폴더 추가 성공"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         result = service.add_folder(folder_id=1, path=str(temp_dir))
@@ -238,7 +229,6 @@ class TestFileWatcherService:
 
     def test_add_folder_duplicate_id(self, temp_dir: Path) -> None:
         """중복 폴더 ID 추가 시 False 반환"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         service.add_folder(folder_id=1, path=str(temp_dir))
@@ -251,7 +241,6 @@ class TestFileWatcherService:
 
     def test_add_folder_nonexistent_path(self) -> None:
         """존재하지 않는 경로 추가 시 False 반환"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         result = service.add_folder(folder_id=1, path="/nonexistent/path")
@@ -261,7 +250,6 @@ class TestFileWatcherService:
 
     def test_add_folder_file_path(self, temp_dir: Path) -> None:
         """파일 경로 추가 시 False 반환"""
-        from app.services.file_watcher import FileWatcherService
         
         # 파일 생성
         test_file = temp_dir / "test.txt"
@@ -275,7 +263,6 @@ class TestFileWatcherService:
 
     def test_remove_folder_success(self, temp_dir: Path) -> None:
         """폴더 제거 성공"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         service.add_folder(folder_id=1, path=str(temp_dir))
@@ -287,7 +274,6 @@ class TestFileWatcherService:
 
     def test_remove_folder_not_watching(self) -> None:
         """감시 중이 아닌 폴더 제거 시 False 반환"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         result = service.remove_folder(folder_id=999)
@@ -296,7 +282,6 @@ class TestFileWatcherService:
 
     def test_stop_all(self, temp_dir: Path) -> None:
         """모든 감시 중지"""
-        from app.services.file_watcher import FileWatcherService
         
         service = FileWatcherService(use_polling=True)
         
@@ -322,7 +307,6 @@ class TestMarkdownEventHandlerTimerCleanup:
     @pytest.mark.asyncio
     async def test_cancel_all_timers(self) -> None:
         """cancel_all_timers가 모든 타이머를 취소하는지 확인"""
-        from app.services.file_watcher import MarkdownEventHandler
         
         callback = AsyncMock()
         handler = MarkdownEventHandler(folder_id=1, callback=callback)
@@ -342,4 +326,3 @@ class TestMarkdownEventHandlerTimerCleanup:
         # 충분히 대기해도 콜백이 호출되지 않음
         await asyncio.sleep(0.5)
         assert callback.call_count == 0
-

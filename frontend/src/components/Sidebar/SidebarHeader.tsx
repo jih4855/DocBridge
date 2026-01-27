@@ -15,12 +15,14 @@ export default function SidebarHeader({ onOpenRegisterModal }: SidebarHeaderProp
                     onClick={onOpenRegisterModal}
                     className="p-1 rounded hover:bg-hover text-secondary hover:text-primary transition-all duration-150"
                     title="새 프로젝트 등록"
+                    aria-label="New Project"
                 >
                     <FolderPlus size={16} strokeWidth={1.5} />
                 </button>
                 <button
                     className="p-1 rounded hover:bg-hover text-secondary hover:text-primary transition-all duration-150"
                     title="설정"
+                    aria-label="Settings"
                 >
                     <Settings size={16} strokeWidth={1.5} />
                 </button>

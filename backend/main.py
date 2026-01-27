@@ -35,14 +35,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # 기존 등록된 폴더들 watcher 추가
     try:
         from app.repositories.folder_repository import FolderRepository
+        from app.services.folder_service import FolderService
+        from app.core.config import settings
+
         db_gen = get_db()
         db = next(db_gen)
         try:
             repo = FolderRepository(db)
-            folders = repo.find_all()
-            for folder in folders:
-                file_watcher.add_folder(folder.id, folder.path)
-            logger.info(f"기존 폴더 {len(folders)}개 감시 시작")
+            service = FolderService(repo, file_watcher, settings)
+            service.initialize_watchers()
         finally:
             try:
                 next(db_gen)
@@ -68,7 +69,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(","),
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

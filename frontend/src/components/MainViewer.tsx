@@ -25,10 +25,12 @@ export default function MainViewer({ filePath }: MainViewerProps) {
     if (!filePath) {
         return (
             <main className="flex-1 bg-main flex flex-col items-center justify-center h-full select-none">
-                <div className="flex flex-col items-center opacity-30 hover:opacity-50 transition-opacity duration-300">
-                    <FileText size={96} strokeWidth={1} className="mb-4 text-primary" />
-                    <p className="text-lg font-medium text-primary tracking-wide">
-                        파일을 선택하세요
+                <div className="flex flex-col items-center opacity-40 hover:opacity-60 transition-opacity duration-300">
+                    <div className="p-6 rounded-full bg-hover/50 mb-4">
+                        <FileText size={48} strokeWidth={1.5} className="text-muted" />
+                    </div>
+                    <p className="text-sm font-medium text-muted tracking-wide">
+                        파일을 선택하여 미리보기
                     </p>
                 </div>
             </main>
@@ -52,6 +54,7 @@ export default function MainViewer({ filePath }: MainViewerProps) {
                         disabled={loading || !!error || !content}
                         className="p-1 text-secondary hover:text-primary transition-colors disabled:opacity-30"
                         title="내용 복사"
+                        aria-label="Copy Content"
                     >
                         <Copy size={14} />
                     </button>
