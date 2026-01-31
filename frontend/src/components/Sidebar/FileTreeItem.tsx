@@ -9,6 +9,7 @@ import {
     FileText,
 } from 'lucide-react';
 import FileTree from './FileTree';
+import { useAppState } from '@/lib/appState';
 
 interface TreeNode {
     name: string;
@@ -20,17 +21,14 @@ interface TreeNode {
 interface FileTreeItemProps {
     node: TreeNode;
     level: number;
-    selectedFile: string | null;
-    onSelectFile: (path: string) => void;
 }
 
 export default function FileTreeItem({
     node,
     level,
-    selectedFile,
-    onSelectFile,
 }: FileTreeItemProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const { selectedFile, selectFile } = useAppState();
 
     const paddingLeft = 8 + level * 16; // Base 8px + depth * 16px
     const isSelected = node.path === selectedFile;
@@ -49,7 +47,7 @@ export default function FileTreeItem({
                     }
                 `}
                 style={{ paddingLeft }}
-                onClick={() => node.path && onSelectFile(node.path)}
+                onClick={() => node.path && selectFile(node.path)}
                 title={node.name}
             >
                 <FileText
@@ -93,8 +91,6 @@ export default function FileTreeItem({
                 <FileTree
                     nodes={node.children}
                     level={level + 1}
-                    selectedFile={selectedFile}
-                    onSelectFile={onSelectFile}
                 />
             )}
         </div>

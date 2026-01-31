@@ -1,6 +1,8 @@
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FolderRegisterModal from './FolderRegisterModal';
 import { fetchClient, ApiError } from '@/lib/api';
+import { AppStateProvider, useAppState } from '@/lib/appState';
 
 // fetchClient Mock
 jest.mock('@/lib/api', () => ({
@@ -13,45 +15,45 @@ jest.mock('@/lib/api', () => ({
 }));
 
 describe('FolderRegisterModal', () => {
-    const mockOnClose = jest.fn();
-    const mockOnSuccess = jest.fn();
-
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
+    function renderOpenModal() {
+        function OpenModal() {
+            const { openRegisterModal } = useAppState();
+            React.useEffect(() => {
+                openRegisterModal();
+            }, [openRegisterModal]);
+            return null;
+        }
+
+        return render(
+            <AppStateProvider>
+                <OpenModal />
+                <FolderRegisterModal />
+            </AppStateProvider>
+        );
+    }
+
     it('renders nothing when not open', () => {
         render(
-            <FolderRegisterModal
-                isOpen={false}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
+            <AppStateProvider>
+                <FolderRegisterModal />
+            </AppStateProvider>
         );
         expect(screen.queryByText('새 프로젝트 등록')).not.toBeInTheDocument();
     });
 
     it('renders correct content when open', () => {
-        render(
-            <FolderRegisterModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        renderOpenModal();
         expect(screen.getByText('새 프로젝트 등록')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('예: My Project')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('/data/...')).toBeInTheDocument();
     });
 
     it('shows error when submitting empty values', async () => {
-        render(
-            <FolderRegisterModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        renderOpenModal();
 
         fireEvent.click(screen.getByText('등록'));
 
@@ -61,13 +63,7 @@ describe('FolderRegisterModal', () => {
     it('handles successful registration', async () => {
         (fetchClient as jest.Mock).mockResolvedValue({ id: 1, name: 'Test', path: '/test' });
 
-        render(
-            <FolderRegisterModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        renderOpenModal();
 
         fireEvent.change(screen.getByPlaceholderText('예: My Project'), { target: { value: 'Test Project' } });
         fireEvent.change(screen.getByPlaceholderText('/data/...'), { target: { value: '/data/test' } });
@@ -78,8 +74,9 @@ describe('FolderRegisterModal', () => {
                 method: 'POST',
                 body: JSON.stringify({ name: 'Test Project', path: '/data/test' }),
             }));
-            expect(mockOnSuccess).toHaveBeenCalled();
-            expect(mockOnClose).toHaveBeenCalled();
+        });
+        await waitFor(() => {
+            expect(screen.queryByText('새 프로젝트 등록')).not.toBeInTheDocument();
         });
     });
 
@@ -87,19 +84,12 @@ describe('FolderRegisterModal', () => {
         const errorMsg = '이미 존재하는 경로입니다.';
         (fetchClient as jest.Mock).mockRejectedValue(new ApiError(409, 'CONFLICT', errorMsg));
 
-        render(
-            <FolderRegisterModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        renderOpenModal();
 
         fireEvent.change(screen.getByPlaceholderText('예: My Project'), { target: { value: 'Test Project' } });
         fireEvent.change(screen.getByPlaceholderText('/data/...'), { target: { value: '/data/test' } });
         fireEvent.click(screen.getByText('등록'));
 
         expect(await screen.findByText(errorMsg)).toBeInTheDocument();
-        expect(mockOnSuccess).not.toHaveBeenCalled();
     });
 });

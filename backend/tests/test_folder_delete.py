@@ -48,29 +48,17 @@ class TestFolderDeleteValidation:
 
         # Then
         assert response.status_code == 404
-        assert response.json()["message"] == "folder not found"
+        assert response.json()["error"] == "folder not found"
 
     def test_delete_folder_invalid_id(self, client: TestClient):
-        """숫자가 아닌 ID 입력 시 422 (FastAPI default) or 400"""
-        # FastAPI treats path param type mismatch as 422 usually, but spec asks for 400 in table?
-        # Actually standard FastAPI behavior for int path param with string input is 422 validation error.
-        # But let's check what spec says in edge cases.
-        # Spec says: "숫자가 아닌 ID -> 400". 
-        # However, FastAPI default is 422. We might need exception handler or just expect 422.
-        # Let's see if we can implement custom validation or just accept 422 if allowed.
-        # Strict spec compliance: "400".
-        # We will try to match spec, but if FastAPI default handles it, we might need a custom exception handler 
-        # or just correct the spec references in real world. 
-        # For now, let's assume we might get 422 unless we override.
-        # Wait, if I define path param as int, FastAPI does auto validation.
+        """숫자가 아닌 ID 입력 시 400"""
         
         # When
         response = client.delete("/api/folders/abc")
         
         # Then
-        # 글로벌 핸들러 추가로 400 반환 보장됨 -> 422 (FastAPI standard)
-        assert response.status_code == 422
-        # assert response.json()["message"] == "invalid request"  # 422 usually returns detail list 
+        # 글로벌 핸들러에서 400 반환
+        assert response.status_code == 400
 
     def test_delete_folder_negative_id(self, client: TestClient, db: Session):
         """음수 ID 입력 시 400"""
@@ -80,7 +68,7 @@ class TestFolderDeleteValidation:
 
         # Then
         assert response.status_code == 400
-        assert response.json()["message"] == "invalid folder id"
+        assert response.json()["error"] == "invalid folder id"
 
 
 class TestFolderDeleteEdgeCases:

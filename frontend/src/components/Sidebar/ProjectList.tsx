@@ -13,8 +13,6 @@ interface ProjectListProps {
     folders: Folder[];
     isLoading: boolean;
     error: string | null;
-    selectedFile: string | null;
-    onSelectFile: (path: string) => void;
     onDeleteFolder: (id: number) => void;
     onRetry: () => void;
     refreshTriggers: Record<number, number>;
@@ -66,8 +64,6 @@ export default function ProjectList({
     folders,
     isLoading,
     error,
-    selectedFile,
-    onSelectFile,
     onDeleteFolder,
     onRetry,
     refreshTriggers,
@@ -90,8 +86,6 @@ export default function ProjectList({
                 <ProjectItem
                     key={folder.id}
                     folder={folder}
-                    selectedFile={selectedFile}
-                    onSelectFile={onSelectFile}
                     onDelete={() => onDeleteFolder(folder.id)}
                     refreshTrigger={refreshTriggers[folder.id] || 0}
                 />

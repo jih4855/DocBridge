@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from pathlib import Path
 
-from app.services.folder_service import FolderService, PathNotExistsError
+from app.services.folder_service import FolderService, PathNotExistsError, PathDeniedError
 from app.repositories.folder_repository import FolderRepository
 from app.services.file_watcher import FileWatcherService
 from app.core.config import Settings
@@ -32,7 +32,7 @@ def folder_service(mock_repo, mock_file_watcher, mock_settings):
 class TestSecurityPathValidation:
     def test_register_system_root_should_fail(self, folder_service):
         """시스템 루트 경로는 등록할 수 없어야 한다"""
-        with pytest.raises(ValueError, match="시스템 보호 경로는 등록할 수 없습니다"):
+        with pytest.raises(PathDeniedError):
             # Mock os.path to simulate existence
             with patch("os.path.exists", return_value=True):
                 with patch("os.path.isdir", return_value=True):
@@ -44,7 +44,7 @@ class TestSecurityPathValidation:
         
         # macOS resolves /etc to /private/etc. Mock resolve to return /etc for strict testing.
         with patch.object(Path, "resolve", return_value=Path("/etc")):
-            with pytest.raises(ValueError, match="시스템 보호 경로는 등록할 수 없습니다"):
+            with pytest.raises(PathDeniedError):
                  with patch("os.path.exists", return_value=True):
                     with patch("os.path.isdir", return_value=True):
                         folder_service.register_folder(Mock(path="/etc", name="Etc"))
@@ -88,4 +88,3 @@ class TestStabilityStartupCheck:
                 
                 # 2. 고아 폴더는 warning 로그
                 mock_logger.warning.assert_called_with(f"고아 폴더 감지됨: {orphan_folder.path}")
-

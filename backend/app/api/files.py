@@ -36,37 +36,10 @@ async def get_file_content(path: str = None, db: Session = Depends(get_db)):
     if not path:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "path is required"}
+            content={"error": "path is required", "code": "BAD_REQUEST"}
         )
 
-    # 2. 파일 확인 (존재 여부, 디렉토리 여부)
-    if not os.path.exists(path):
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "file not found"}
-        )
-        
-    if os.path.isdir(path):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "path is not a file"}
-        )
-
-    # 3. 심볼릭 링크 체크 (보안 - Spec Edge Case)
-    if os.path.islink(path):
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "access denied"}
-        )
-
-    # 4. 마크다운 확장자 체크 (Spec Req)
-    if not path.endswith(".md"):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "only markdown files allowed"}
-        )
-
-    # 허용된 폴더 경로인지 확인 (보안)
+    # 2. 허용된 폴더 경로인지 확인 (보안)
     repository = FolderRepository(db)
     from app.services.file_watcher import file_watcher
     from app.core.config import settings
@@ -93,7 +66,34 @@ async def get_file_content(path: str = None, db: Session = Depends(get_db)):
     if not is_allowed:
          return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "access denied"}
+            content={"error": "access denied", "code": "FORBIDDEN"}
+        )
+
+    # 3. 심볼릭 링크 체크 (보안 - Spec Edge Case)
+    if os.path.islink(path):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"error": "access denied", "code": "FORBIDDEN"}
+        )
+
+    # 4. 파일 확인 (존재 여부, 디렉토리 여부)
+    if not os.path.exists(path):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": "file not found", "code": "NOT_FOUND"}
+        )
+        
+    if os.path.isdir(path):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "path is not a file", "code": "BAD_REQUEST"}
+        )
+
+    # 5. 마크다운 확장자 체크 (Spec Req)
+    if not path.endswith(".md"):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "only markdown files allowed", "code": "BAD_REQUEST"}
         )
             
     # 6. 파일 읽기
@@ -106,5 +106,5 @@ async def get_file_content(path: str = None, db: Session = Depends(get_db)):
         # 예기치 못한 파일 읽기 에러
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": str(e)}
+            content={"error": "file read error", "code": "INTERNAL_SERVER_ERROR"}
         )

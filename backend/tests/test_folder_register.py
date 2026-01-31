@@ -88,8 +88,8 @@ class TestFolderRegisterValidation:
         response = client.post("/api/folders", json=request_body)
 
         # Then
-        assert response.status_code == 422
-        assert response.json()["message"] == "입력값이 유효하지 않습니다."
+        assert response.status_code == 400
+        assert response.json()["error"] == "입력값이 유효하지 않습니다."
 
     def test_register_folder_empty_name(
         self, client: TestClient, temp_dir: Path
@@ -105,8 +105,8 @@ class TestFolderRegisterValidation:
         response = client.post("/api/folders", json=request_body)
 
         # Then
-        assert response.status_code == 422
-        assert response.json()["message"] == "입력값이 유효하지 않습니다."
+        assert response.status_code == 400
+        assert response.json()["error"] == "입력값이 유효하지 않습니다."
 
     def test_register_folder_missing_path(
         self, client: TestClient
@@ -121,8 +121,8 @@ class TestFolderRegisterValidation:
         response = client.post("/api/folders", json=request_body)
 
         # Then
-        assert response.status_code == 422
-        assert response.json()["message"] == "입력값이 유효하지 않습니다."
+        assert response.status_code == 400
+        assert response.json()["error"] == "입력값이 유효하지 않습니다."
 
     def test_register_folder_empty_path(
         self, client: TestClient
@@ -138,8 +138,8 @@ class TestFolderRegisterValidation:
         response = client.post("/api/folders", json=request_body)
 
         # Then
-        assert response.status_code == 422
-        assert response.json()["message"] == "입력값이 유효하지 않습니다."
+        assert response.status_code == 400
+        assert response.json()["error"] == "입력값이 유효하지 않습니다."
 
     def test_register_folder_name_too_long(
         self, client: TestClient, temp_dir: Path
@@ -156,7 +156,7 @@ class TestFolderRegisterValidation:
         response = client.post("/api/folders", json=request_body)
 
         # Then
-        assert response.status_code == 422
+        assert response.status_code == 400
 
 
 class TestFolderRegisterPathValidation:
@@ -177,7 +177,7 @@ class TestFolderRegisterPathValidation:
 
         # Then
         assert response.status_code == 400
-        assert response.json()["message"] == "path does not exist"
+        assert response.json()["error"] == "path does not exist"
 
     def test_register_folder_path_not_directory(
         self, client: TestClient, temp_file: Path
@@ -194,7 +194,7 @@ class TestFolderRegisterPathValidation:
 
         # Then
         assert response.status_code == 400
-        assert response.json()["message"] == "path is not a directory"
+        assert response.json()["error"] == "path is not a directory"
 
 
 class TestFolderRegisterDuplicate:
@@ -220,7 +220,7 @@ class TestFolderRegisterDuplicate:
 
         # Then
         assert response.status_code == 409
-        assert response.json()["message"] == "path already registered"
+        assert response.json()["error"] == "path already registered"
 
     def test_register_folder_same_path_with_trailing_slash(
         self, client: TestClient, temp_dir: Path
@@ -242,7 +242,7 @@ class TestFolderRegisterDuplicate:
 
         # Then
         assert response.status_code == 409
-        assert response.json()["message"] == "path already registered"
+        assert response.json()["error"] == "path already registered"
 
     def test_register_folder_same_name_allowed(
         self, client: TestClient, temp_dir: Path

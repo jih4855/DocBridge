@@ -21,7 +21,6 @@ jest.mock('./FileTree', () => {
 
 describe('ProjectItem', () => {
     const mockFolder = { id: 1, name: 'Project A', path: '/data/project-a', created_at: '' }; // Added created_at to satisfy interface
-    const mockOnSelectFile = jest.fn();
     const mockOnDelete = jest.fn();
 
     beforeEach(() => {
@@ -32,8 +31,6 @@ describe('ProjectItem', () => {
         render(
             <ProjectItem
                 folder={mockFolder}
-                selectedFile={null}
-                onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
                 refreshTrigger={0}
             />
@@ -48,8 +45,6 @@ describe('ProjectItem', () => {
         render(
             <ProjectItem
                 folder={mockFolder}
-                selectedFile={null}
-                onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
                 refreshTrigger={0}
             />
@@ -68,8 +63,6 @@ describe('ProjectItem', () => {
         render(
             <ProjectItem
                 folder={mockFolder}
-                selectedFile={null}
-                onSelectFile={mockOnSelectFile}
                 onDelete={mockOnDelete}
                 refreshTrigger={0}
             />

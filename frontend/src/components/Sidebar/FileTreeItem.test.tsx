@@ -1,6 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FileTreeItem from './FileTreeItem';
 import '@testing-library/jest-dom';
+import { AppStateProvider, useAppState } from '@/lib/appState';
 
 // Mock Recursive Component to avoid infinite loops in tests or complex rendering
 jest.mock('./FileTree', () => ({
@@ -20,37 +22,67 @@ const mockNodeFolder = {
     children: [mockNodeFile]
 };
 
-const defaultProps = {
-    level: 0,
-    selectedFile: null,
-    onSelectFile: jest.fn()
-};
+function renderWithState(ui: React.ReactElement, initSelected?: string) {
+    function InitSelection() {
+        const { selectFile } = useAppState();
+        React.useEffect(() => {
+            if (initSelected) {
+                selectFile(initSelected);
+            }
+        }, [selectFile, initSelected]);
+        return null;
+    }
+
+    function Wrapper() {
+        return (
+            <>
+                <InitSelection />
+                {ui}
+            </>
+        );
+    }
+
+    return render(
+        <AppStateProvider>
+            <Wrapper />
+        </AppStateProvider>
+    );
+}
 
 describe('FileTreeItem', () => {
     it('renders a file item correctly', () => {
-        render(<FileTreeItem {...defaultProps} node={mockNodeFile} />);
+        renderWithState(<FileTreeItem node={mockNodeFile} level={0} />);
 
         expect(screen.getByText('readme.md')).toBeInTheDocument();
         // Check for file-specific attributes/classes if needed
     });
 
     it('renders a folder item correctly', () => {
-        render(<FileTreeItem {...defaultProps} node={mockNodeFolder} />);
+        renderWithState(<FileTreeItem node={mockNodeFolder} level={0} />);
 
         expect(screen.getByText('src')).toBeInTheDocument();
         // Folders show chevron/folder icons
     });
 
     it('calls onSelectFile when a file is clicked', () => {
-        const handleSelect = jest.fn();
-        render(<FileTreeItem {...defaultProps} node={mockNodeFile} onSelectFile={handleSelect} />);
+        function SelectedProbe() {
+            const { selectedFile } = useAppState();
+            return <div data-testid="selected">{selectedFile || ''}</div>;
+        }
+
+        render(
+            <AppStateProvider>
+                <SelectedProbe />
+                <FileTreeItem node={mockNodeFile} level={0} />
+            </AppStateProvider>
+        );
 
         fireEvent.click(screen.getByText('readme.md'));
-        expect(handleSelect).toHaveBeenCalledWith('/test/readme.md');
+        expect(screen.getByTestId('selected')).toHaveTextContent('/test/readme.md');
     });
 
     it('expands/collapses folder on click', () => {
-        render(<FileTreeItem {...defaultProps} node={mockNodeFolder} />);
+        renderWithState(<FileTreeItem node={mockNodeFolder} level={0} />);
 
         const folderName = screen.getByText('src');
         // The click handler is on the parent div of the text/icons
@@ -69,18 +101,22 @@ describe('FileTreeItem', () => {
     });
 
     it('highlights selected file', () => {
-        render(<FileTreeItem {...defaultProps} node={mockNodeFile} selectedFile="/test/readme.md" />);
+        renderWithState(<FileTreeItem node={mockNodeFile} level={0} />, '/test/readme.md');
 
         const itemContainer = screen.getByText('readme.md').closest('div');
         // Check for the specific active class defined in the component
         // The component uses 'bg-active' for selected state
-        expect(itemContainer).toHaveClass('bg-active');
+        return waitFor(() => {
+            expect(itemContainer).toHaveClass('bg-active');
+        });
     });
 
     it('does not highlight unselected file', () => {
-        render(<FileTreeItem {...defaultProps} node={mockNodeFile} selectedFile="/test/other.md" />);
+        renderWithState(<FileTreeItem node={mockNodeFile} level={0} />, '/test/other.md');
 
         const itemContainer = screen.getByText('readme.md').closest('div');
-        expect(itemContainer).not.toHaveClass('bg-active');
+        return waitFor(() => {
+            expect(itemContainer).not.toHaveClass('bg-active');
+        });
     });
 });

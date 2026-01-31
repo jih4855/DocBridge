@@ -1,15 +1,22 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Copy, FileText, Loader2, AlertCircle } from 'lucide-react';
 import { useFileContent } from '@/hooks/useFileContent';
-import MarkdownViewer from './MarkdownViewer';
+import { useAppState } from '@/lib/appState';
 
-interface MainViewerProps {
-    filePath: string | null;
-}
+const MarkdownViewer = dynamic(() => import('./MarkdownViewer'), {
+    loading: () => (
+        <div className="flex items-center justify-center h-full text-secondary">
+            <Loader2 className="animate-spin mr-2" size={20} />
+            <span>불러오는 중...</span>
+        </div>
+    ),
+});
 
-export default function MainViewer({ filePath }: MainViewerProps) {
-    const { content, loading, error } = useFileContent(filePath);
+export default function MainViewer() {
+    const { selectedFile } = useAppState();
+    const { content, loading, error } = useFileContent(selectedFile);
 
     const handleCopy = async () => {
         if (!content) return;
@@ -22,7 +29,7 @@ export default function MainViewer({ filePath }: MainViewerProps) {
     };
 
     // Empty State
-    if (!filePath) {
+    if (!selectedFile) {
         return (
             <main className="flex-1 bg-main flex flex-col items-center justify-center h-full select-none">
                 <div className="flex flex-col items-center opacity-40 hover:opacity-60 transition-opacity duration-300">
@@ -37,7 +44,7 @@ export default function MainViewer({ filePath }: MainViewerProps) {
         );
     }
 
-    const fileName = filePath.split('/').pop() || '';
+    const fileName = selectedFile.split('/').pop() || '';
 
     return (
         <main className="flex-1 bg-main overflow-auto flex flex-col h-full">

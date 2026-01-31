@@ -7,6 +7,7 @@ interface WebSocketOptions {
     onClose?: () => void;
     retryInterval?: number;
     maxRetryInterval?: number;
+    maxRetryCount?: number;
 }
 
 export function useWebSocket({
@@ -15,7 +16,8 @@ export function useWebSocket({
     onOpen,
     onClose,
     retryInterval = 1000,
-    maxRetryInterval = 30000
+    maxRetryInterval = 30000,
+    maxRetryCount = 5
 }: WebSocketOptions) {
     const [isConnected, setIsConnected] = useState(false);
     const wsRef = useRef<WebSocket | null>(null);
@@ -70,6 +72,10 @@ export function useWebSocket({
             setIsConnected(false);
             onCloseRef.current?.();
 
+            if (retryCountRef.current >= maxRetryCount) {
+                return;
+            }
+
             // Exponential Backoff Logic
             const nextRetryDelay = Math.min(
                 retryInterval * Math.pow(2, retryCountRef.current),
@@ -90,7 +96,7 @@ export function useWebSocket({
             ws.close();
         };
 
-    }, [url, retryInterval, maxRetryInterval]);
+    }, [url, retryInterval, maxRetryInterval, maxRetryCount]);
 
     useEffect(() => {
         connect();

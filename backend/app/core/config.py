@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DATA_DIR: str = "./data"
     PROJECT_ROOT: str = "./docbridge"
     WATCHDOG_USE_POLLING: bool = False
+    DEBUG: bool = False
 
     IGNORED_DIRS: frozenset[str] = frozenset({
         'node_modules', '__pycache__', 'venv', '.venv', 'env', '.env', 

@@ -51,7 +51,7 @@ class FolderService:
         is_root = target_path == target_path.anchor
         
         if str(target_path) in self._settings.DENY_LIST or is_root:
-            raise ValueError("시스템 보호 경로는 등록할 수 없습니다.")
+            raise PathDeniedError()
 
         # 2. 경로 존재 확인
         if not os.path.exists(path):
@@ -123,4 +123,9 @@ class PathNotDirectoryError(Exception):
 
 class PathAlreadyRegisteredError(Exception):
     """경로가 이미 등록됨"""
+    pass
+
+
+class PathDeniedError(Exception):
+    """시스템 보호 경로 접근 차단"""
     pass

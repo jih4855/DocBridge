@@ -16,6 +16,7 @@ from app.services.folder_service import (
     PathAlreadyRegisteredError,
     PathNotDirectoryError,
     PathNotExistsError,
+    PathDeniedError,
 )
 from app.repositories.folder_repository import FolderRepository
 from app.services.file_watcher import file_watcher
@@ -42,12 +43,7 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
     try:
         repository = FolderRepository(db)
         service = FolderService(repository, file_watcher, settings)
-        result = service.register_folder(folder_data)
-        
-        # watcher 추가
-        file_watcher.add_folder(result.id, result.path)
-        
-        return result
+        return service.register_folder(folder_data)
     except PathNotExistsError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,6 +58,11 @@ async def register_folder(folder_data: FolderCreate, db: Session = Depends(get_d
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="path already registered"
+        )
+    except PathDeniedError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="시스템 보호 경로는 등록할 수 없습니다."
         )
 
 
@@ -168,9 +169,6 @@ async def delete_folder(folder_id: int, db: Session = Depends(get_db)):
             detail="folder not found"
         )
         
-    # watcher 제거 (삭제 전)
-    file_watcher.remove_folder(folder_id)
-    
     # 삭제
     service.delete_folder(folder_id)
     

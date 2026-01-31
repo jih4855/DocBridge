@@ -98,4 +98,28 @@ describe('useWebSocket', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((global as any).WebSocket).toHaveBeenCalledTimes(4);
     });
+
+    it('should stop reconnecting after maxRetryCount', () => {
+        renderHook(() => useWebSocket({ url: 'ws://test.com', retryInterval: 1000, maxRetryCount: 2 }));
+
+        act(() => { mockWebSocket.onopen(); });
+
+        // 1st disconnect -> retry 1
+        act(() => { mockWebSocket.onclose(); });
+        act(() => { jest.advanceTimersByTime(1000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((global as any).WebSocket).toHaveBeenCalledTimes(2);
+
+        // 2nd disconnect -> retry 2
+        act(() => { mockWebSocket.onclose(); });
+        act(() => { jest.advanceTimersByTime(2000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((global as any).WebSocket).toHaveBeenCalledTimes(3);
+
+        // 3rd disconnect -> should not retry
+        act(() => { mockWebSocket.onclose(); });
+        act(() => { jest.advanceTimersByTime(4000); });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((global as any).WebSocket).toHaveBeenCalledTimes(3);
+    });
 });

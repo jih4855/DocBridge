@@ -3,24 +3,20 @@
 import { useState } from 'react';
 import { X, FolderPlus } from 'lucide-react';
 import { fetchClient, ApiError } from '@/lib/api';
+import { useAppState } from '@/lib/appState';
 
-interface FolderRegisterModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSuccess: () => void;
-}
-
-export default function FolderRegisterModal({
-    isOpen,
-    onClose,
-    onSuccess,
-}: FolderRegisterModalProps) {
+export default function FolderRegisterModal() {
+    const {
+        isRegisterModalOpen,
+        closeRegisterModal,
+        bumpRefreshTrigger,
+    } = useAppState();
     const [name, setName] = useState('');
     const [path, setPath] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    if (!isOpen) return null;
+    if (!isRegisterModalOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,8 +41,8 @@ export default function FolderRegisterModal({
 
             setName('');
             setPath('');
-            onSuccess();
-            onClose();
+            bumpRefreshTrigger();
+            closeRegisterModal();
         } catch (err) {
             if (err instanceof ApiError) {
                 setError(err.message);
@@ -62,7 +58,7 @@ export default function FolderRegisterModal({
         setName('');
         setPath('');
         setError(null);
-        onClose();
+        closeRegisterModal();
     };
 
     return (

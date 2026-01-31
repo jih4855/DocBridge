@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import { AppStateProvider } from '@/lib/appState';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -29,7 +30,7 @@ export default function RootLayout({
             <body
                 className={`${inter.variable} ${jetbrainsMono.variable} font-sans bg-main text-primary antialiased h-screen overflow-hidden`}
             >
-                {children}
+                <AppStateProvider>{children}</AppStateProvider>
             </body>
         </html>
     );

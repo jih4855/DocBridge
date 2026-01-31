@@ -26,8 +26,6 @@ interface TreeNode {
 
 interface ProjectItemProps {
     folder: FolderData;
-    selectedFile: string | null;
-    onSelectFile: (path: string) => void;
     onDelete: () => void;
     refreshTrigger: number;
 }
@@ -35,8 +33,6 @@ interface ProjectItemProps {
 
 export default function ProjectItem({
     folder,
-    selectedFile,
-    onSelectFile,
     onDelete,
     refreshTrigger,
 }: ProjectItemProps) {
@@ -134,8 +130,6 @@ export default function ProjectItem({
                 <FileTree
                     nodes={treeData}
                     level={1}
-                    selectedFile={selectedFile}
-                    onSelectFile={onSelectFile}
                 />
             )}
         </div>

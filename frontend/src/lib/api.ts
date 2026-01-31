@@ -47,10 +47,9 @@ export async function fetchClient<T>(endpoint: string, options: RequestOption = 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            // 백엔드 표준 에러 스키마: { code, message, details }
-            // 혹은 기존 에러 스키마: { error }
+        // 백엔드 표준 에러 스키마: { error, code, details }
             const errorCode = data.code || 'UNKNOWN_ERROR';
-            const errorMessage = data.message || data.error || '알 수 없는 오류가 발생했습니다.';
+            const errorMessage = data.error || data.message || '알 수 없는 오류가 발생했습니다.';
 
             throw new ApiError(response.status, errorCode, errorMessage);
         }

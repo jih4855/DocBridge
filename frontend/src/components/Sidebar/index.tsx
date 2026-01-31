@@ -4,24 +4,11 @@ import { useState } from 'react';
 import SidebarHeader from './SidebarHeader';
 import ProjectList from './ProjectList';
 import { useFolderTree } from '@/hooks/useFolderTree';
+import { useAppState } from '@/lib/appState';
 
-interface SidebarProps {
-    width: number;
-    onWidthChange: (width: number) => void;
-    selectedFile: string | null;
-    onSelectFile: (path: string) => void;
-    onOpenRegisterModal: () => void;
-    refreshTrigger: number;
-}
-
-export default function Sidebar({
-    width,
-    onWidthChange,
-    selectedFile,
-    onSelectFile,
-    onOpenRegisterModal,
-    refreshTrigger,
-}: SidebarProps) {
+export default function Sidebar() {
+    const { refreshTrigger } = useAppState();
+    const [width, setWidth] = useState(240);
     const {
         folders,
         isLoading,
@@ -42,7 +29,7 @@ export default function Sidebar({
 
     const handleMouseMove = (e: MouseEvent) => {
         const newWidth = Math.min(Math.max(e.clientX, 200), 400);
-        onWidthChange(newWidth);
+        setWidth(newWidth);
     };
 
     const handleMouseUp = () => {
@@ -57,7 +44,7 @@ export default function Sidebar({
             style={{ width, minWidth: 200, maxWidth: 400 }}
         >
             {/* 헤더 */}
-            <SidebarHeader onOpenRegisterModal={onOpenRegisterModal} />
+            <SidebarHeader />
 
             {/* 프로젝트 목록 */}
             <div className="flex-1 overflow-auto">
@@ -65,8 +52,6 @@ export default function Sidebar({
                     folders={folders}
                     isLoading={isLoading}
                     error={error}
-                    selectedFile={selectedFile}
-                    onSelectFile={onSelectFile}
                     onDeleteFolder={deleteFolder}
                     onRetry={loadFolders}
                     refreshTriggers={refreshTriggers}
